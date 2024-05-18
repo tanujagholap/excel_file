@@ -1,3 +1,4 @@
+from django.db.models import Sum
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -21,20 +22,9 @@ class ProductView(APIView):
 
 
 class TotalCalculationAPIView(APIView):
-    parser_classes = [MultiPartParser]
-
-    def post(self, request, format=None):
-        # if 'excel_file' not in request.FILES:
-        #     return Response({'error': 'No file uploaded'}, status=400)
-        #
-        excel_file = request.FILES['excel_file']
-
-        try:
-            df = pd.read_file(excel_file)
-            total = df['price'].sum()
-            return Response({'total': total}, status=200)
-        except Exception as e:
-            return Response({'error': str(e)}, status=400)
+    def get(self, request):
+        obj = Product.objects.aggregate(total_sum=Sum('price'))
+        return Response(data=obj, status=200)
 
 
 class ProductUpdate(APIView):
